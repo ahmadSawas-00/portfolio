@@ -1,25 +1,40 @@
-FROM php:8.3-cli
+# استخدام نسخة PHP CLI خفيفة (إصدار 8.2 مناسب جداً لأحدث إصدارات لارافيل)
+FROM php:8.2-cli
 
+# تثبيت الحزم الأساسية ومكتبات نظام التشغيل المطلوبة لـ SQLite
 RUN apt-get update && apt-get install -y \
     git \
-    unzip \
-    libpq-dev \
+    curl \
+    libpng-dev \
     libonig-dev \
     libxml2-dev \
     zip \
-    && docker-php-ext-install pdo pdo_mysql mbstring
+    unzip \
+    sqlite3 \
+    libsqlite3-dev
 
+# تثبيت إضافات PHP الضرورية للارافيل وللاتصال بـ SQLite
+RUN docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd
+
+# تثبيت مدير الحزم Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# تحديد مجلد العمل داخل الحاوية
 WORKDIR /app
 
+# نسخ جميع ملفات المشروع إلى الحاوية
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+# تثبيت مكتبات لارافيل (بدون التفاعل مع المستخدم لعدم توقف البناء)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-RUN chmod -R 777 storage bootstrap/cache
+# إنشاء ملف قاعدة البيانات (في حال لم يتم نسخه) وإعطاء الصلاحيات الكاملة
+# SQLite تحتاج إلى صلاحيات كتابة على الملف والمجلد الذي يحتويه لتعمل بنجاح
+RUN mkdir -p database && touch database/database.sqlite
+RUN chmod -R 777 database storage bootstrap/cache
 
+# المنفذ الافتراضي الذي تتعرف عليه Render
 EXPOSE 10000
 
-# تنظيف الكاش بالكامل قبل تشغيل السيرفر
-CMD php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan serve --host=0.0.0.0 --port=10000
+# تشغيل التهجير (لإنشاء الجداول) ثم تشغيل سيرفر لارافيل فور إقلاع الحاوية
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
