@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
 
 # تثبيت الحزم الأساسية لنظام التشغيل وامتدادات PHP المطلوبة لـ Laravel
 RUN apt-get update && apt-get install -y \
@@ -19,10 +19,10 @@ WORKDIR /app
 # نسخ ملفات المشروع
 COPY . .
 
-# تثبيت حزم الاعتمادات لـ Production
-RUN composer install --no-dev --optimize-autoloader
+# تثبيت حزم الاعتمادات بدون فحص الشروط الصارمة للإصدار
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# إعطاء صلاحيات المجلدات المقتطعة
+# إعطاء صلاحيات المجلدات
 RUN chmod -R 777 storage bootstrap/cache
 
 # تحديد المنفذ وأمر التشغيل
