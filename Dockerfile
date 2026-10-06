@@ -1,5 +1,5 @@
 # استخدام نسخة PHP CLI خفيفة (إصدار 8.2 مناسب جداً لأحدث إصدارات لارافيل)
-FROM php:8.2-cli
+FROM php:8.3-cli
 
 # تثبيت الحزم الأساسية ومكتبات نظام التشغيل المطلوبة لـ SQLite
 RUN apt-get update && apt-get install -y \
@@ -26,8 +26,7 @@ WORKDIR /app
 COPY . .
 
 # تثبيت مكتبات لارافيل (بدون التفاعل مع المستخدم لعدم توقف البناء)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 # إنشاء ملف قاعدة البيانات (في حال لم يتم نسخه) وإعطاء الصلاحيات الكاملة
 # SQLite تحتاج إلى صلاحيات كتابة على الملف والمجلد الذي يحتويه لتعمل بنجاح
 RUN mkdir -p database && touch database/database.sqlite
