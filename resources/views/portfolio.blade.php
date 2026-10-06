@@ -347,7 +347,7 @@
                     <i class="fa-brands fa-whatsapp text-2xl text-emerald-500"></i>
                     <span class="font-bold text-sm text-ltr">WhatsApp</span>
                 </a>
-            </div>
+            </div> 
 
         </div>
 
