@@ -8,9 +8,11 @@ class PortfolioController extends Controller
 {
     public function index()
     {
-        // جلب المشاريع ديناميكياً مع تخزين مؤقت لسرعة التحميل
-        $repos = Cache::remember('github_repos_ahmadSawas-00', now()->addHours(6), function () {
-            $response = Http::get('https://api.github.com/users/ahmadSawas-00/repos', [
+        // تم تغيير اسم مفتاح الكاش (أضفنا v2) لإجبار النظام على تجاهل الكاش القديم وجلب البيانات من جديد
+        $repos = Cache::remember('github_repos_ahmadSawas_v2', now()->addHours(6), function () {
+            
+            // تمرير التوكن مع الطلب
+            $response = Http::withToken(env('GITHUB_TOKEN'))->get('https://api.github.com/users/ahmadSawas-00/repos', [
                 'sort' => 'updated',
                 'per_page' => 6
             ]);
